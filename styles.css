@@ -1,0 +1,283 @@
+/* ===== Base ===== */
+*{ box-sizing: border-box; }
+html, body{ height:100%; overflow:hidden; }
+:root{
+  --bg: radial-gradient(1200px 800px at 10% 10%, #1f2937 0%, #0b1020 60%);
+  --glass: rgba(255,255,255,.08);
+  --glass-border: rgba(255,255,255,.18);
+  --text: #E5E7EB;
+  --muted:#94A3B8;
+  --accent:#F59E0B;
+  --accent-2:#FBBF24;
+  --gold-1:#efcc68;
+  --gold-2:#c38824;
+}
+
+body{
+  margin:0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  color: var(--text);
+  background: url('img/background.jpg') center center / cover no-repeat fixed;
+}
+
+/* ===== Layout ===== */
+.app{
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: clamp(16px, 3vw, 32px);
+  padding: clamp(16px, 3vw, 32px);
+}
+
+.stage, .scoreboard{
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 30px 60px rgba(0,0,0,.45);
+}
+
+/* Left side */
+.stage{
+  display: grid;
+  grid-template-rows: 1fr auto;
+  padding: clamp(16px, 2vw, 24px);
+}
+
+.coin-wrap{
+  display:grid;
+  place-items:center;
+  width:100%;
+  height:100%;
+  perspective: 1200px; /* Keep perspective like original */
+}
+
+/* === Coin styles compatible with original JS === */
+.coin{
+  width: min(60vh, 58vw, 520px);
+  height: auto;
+  aspect-ratio: 1/1;
+  position: relative;
+  border-radius: 50%;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+  transition: transform 1s cubic-bezier(0.4, 2.5, 0.6, 0.5); /* default; JS overrides per toss */
+  margin: 0 auto;
+}
+
+.coin .heads, .coin .tails{
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 50%;
+  overflow: hidden;
+}
+.coin .heads img, .coin .tails img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.coin .heads{ transform: rotateY(0deg); }
+.coin .tails{ transform: rotateY(180deg); }
+
+.coin::before{
+  content:"";
+  position:absolute; inset:0;
+  border-radius:50%;
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.4);
+  pointer-events:none;
+}
+
+/* Button */
+.btn{
+  background-image: linear-gradient(45deg, var(--gold-1), var(--gold-2));
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform .2s ease-in-out, opacity .2s ease-in-out;
+  font-size: clamp(18px, 2.4vw, 24px);
+  margin-top: 1em;
+}
+.btn:hover{ transform: scale(1.05); }
+.btn:disabled{ opacity:.6; cursor: not-allowed; }
+
+.racing-sans-one-regular {
+  font-family: "Racing Sans One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.gold{ color: var(--gold-2); }
+
+/* Right side: scoreboard */
+.scoreboard{
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  padding: clamp(16px, 2vw, 24px);
+}
+.brand .title{
+  margin: 0 0 6px 0;
+  font-family: "Racing Sans One", sans-serif;
+  font-weight: 400;
+  font-size: clamp(28px, 4.5vw, 48px);
+}
+.brand .accent{ color: var(--accent-2); }
+.brand .badge{
+  display:inline-block;
+  font-size:.6em;
+  padding:.25em .5em;
+  border-radius:999px;
+  background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+  color:white;
+  vertical-align:middle;
+  margin-left:.25em;
+}
+
+.current{
+  margin-top: clamp(8px, 1.5vw, 12px);
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px dashed rgba(255,255,255,.15);
+  background: rgba(255,255,255,.04);
+  height: 110px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.label{
+  font-size: .9rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  margin-bottom: 6px;
+}
+.result{
+  margin: 10px 0 0 0;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 800;
+  letter-spacing: .02em;
+  transition: opacity 0.5s ease-in-out;
+  opacity: 0; /* fade-in stays */
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--gold-1);             /* lighter gold */
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+}
+
+/* History list */
+.history{
+  margin-top: clamp(12px, 2.5vw, 18px);
+  min-height: 0; /* allow the fixed-height list to fit */
+}
+.history-list{
+  list-style: none;
+  margin: 0;
+  padding: 10px;
+  overflow: auto;
+  height: 260px;
+  max-height: 260px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  /* Subtle scrollbars */
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(255,255,255,.18) transparent;
+}
+.history-list li{
+  display: grid;
+  grid-auto-rows: min-content;
+  align-items: center;
+  justify-items: center;
+  padding: 10px 8px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+}
+.badge-pill{
+  font-weight: 700;
+  font-size: .9rem;
+  padding: .15rem .5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.08));
+  margin-bottom: 6px;
+}
+.time{ font-size:.85rem; color: var(--muted); }
+
+/* Responsive */
+@media (max-width: 980px){
+  .app{ grid-template-columns: 1fr; }
+  .coin{ width: min(48vh, 80vw); }
+}
+
+.history-face{
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+.history-face.heads{ color: var(--accent-2); }
+.history-face.tails{ color: #60a5fa; }
+
+.brand .logo{
+  display:block;
+  margin: 0 auto 8px auto;
+  width: clamp(180px, 50vw, 320px);
+  height: auto;
+  filter: drop-shadow(0 6px 20px rgba(0,0,0,.35));
+  user-select: none;
+  pointer-events: none;
+}
+
+.site-footer{
+  text-align:center;
+  color: var(--muted);
+  font-size: 0.95rem;
+  padding: 10px 8px 0;
+}
+
+.controls{ display: none; }
+
+#toss-button{ display:none; }
+
+/* Subtle WebKit scrollbars for history list */
+.history-list::-webkit-scrollbar{ width: 6px; height: 6px; }
+.history-list::-webkit-scrollbar-track{ background: transparent; }
+.history-list::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,.18);
+  border-radius: 8px;
+}
+.history-list:hover::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,.28);
+}
+
+/* Fullscreen toggle button */
+.fs-toggle{
+  position: fixed;
+  right: clamp(12px, 2.5vw, 20px);
+  bottom: clamp(12px, 2.5vw, 20px);
+  z-index: 9999;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.25);
+  background: rgba(15, 23, 42, .45);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .15s ease, opacity .2s ease, background .2s ease;
+  color: var(--text);
+}
+.fs-toggle:hover{ transform: translateY(-1px); background: rgba(15, 23, 42, .55); }
+.fs-toggle:active{ transform: translateY(0); }
+.fs-toggle .icon{ width: 22px; height: 22px; fill: currentColor; display: none; }
+.fs-toggle .icon.enter{ display: block; }
+.fs-toggle[data-state="exit"] .icon.enter{ display: none; }
+.fs-toggle[data-state="exit"] .icon.exit{ display: block; }
