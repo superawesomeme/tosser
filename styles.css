@@ -11,6 +11,12 @@ html, body{ height:100%; overflow:hidden; }
   --accent-2:#FBBF24;
   --gold-1:#efcc68;
   --gold-2:#c38824;
+  --neon-gold: #ffd96a;
+  --neon-gold-glow: rgba(255,217,106,.45);
+  --neon-blue: #60a5fa;
+  --neon-blue-glow: rgba(96,165,250,.4);
+  --metal-highlight: rgba(255,255,255,.15);
+  --metal-shadow: rgba(0,0,0,.4);
 }
 
 body{
@@ -85,11 +91,16 @@ body{
 
 .gold{ color: var(--gold-2); }
 
-/* Right side: scoreboard */
+/* ===== Right side: scoreboard (neon & metal vibe) ===== */
 .scoreboard{
   display: grid;
   grid-template-rows: auto auto 1fr;
   padding: clamp(16px, 2vw, 24px);
+  border: 1px solid rgba(255,217,106,.18);
+  box-shadow:
+    0 30px 60px rgba(0,0,0,.45),
+    inset 0 1px 0 var(--metal-highlight),
+    0 0 30px rgba(255,217,106,.06);
 }
 .brand .title{
   margin: 0 0 6px 0;
@@ -109,41 +120,79 @@ body{
   margin-left:.25em;
 }
 
+/* ---- Current result panel ---- */
 .current{
   margin-top: clamp(8px, 1.5vw, 12px);
-  padding: 14px 16px;
+  padding: 18px 20px;
   border-radius: 16px;
-  border: 1px dashed rgba(255,255,255,.15);
-  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,217,106,.22);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,217,106,.08) 0%,
+      rgba(195,136,36,.06) 50%,
+      rgba(255,217,106,.04) 100%
+    );
   height: 110px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 0 18px rgba(255,217,106,.08);
 }
+/* Subtle metallic sheen sweep */
+.current::before{
+  content: '';
+  position: absolute;
+  top: 0; left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.06),
+    transparent
+  );
+  transform: skewX(-20deg);
+  animation: sheen 6s ease-in-out infinite;
+}
+@keyframes sheen{
+  0%, 100%{ left: -60%; }
+  50%{ left: 120%; }
+}
+
 .label{
-  font-size: .9rem;
-  color: var(--muted);
+  font-family: "Racing Sans One", sans-serif;
+  font-size: .85rem;
+  color: var(--neon-gold);
   text-transform: uppercase;
-  letter-spacing: .12em;
+  letter-spacing: .18em;
   margin-bottom: 6px;
+  text-shadow: 0 0 8px var(--neon-gold-glow);
 }
 .result{
   margin: 10px 0 0 0;
   font-size: clamp(28px, 4vw, 40px);
   font-weight: 800;
-  letter-spacing: .02em;
+  letter-spacing: .04em;
   transition: opacity 0.5s ease-in-out;
   opacity: 0; /* fade-in stays */
   text-transform: uppercase;
   text-align: center;
-  color: var(--gold-1);             /* lighter gold */
-  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+  color: var(--neon-gold);
+  text-shadow:
+    0 0 10px var(--neon-gold-glow),
+    0 0 30px rgba(255,217,106,.2),
+    0 2px 4px rgba(0,0,0,.5);
 }
 
-/* History list */
+/* ---- History section ---- */
 .history{
   margin-top: clamp(12px, 2.5vw, 18px);
-  min-height: 0; /* allow the fixed-height list to fit */
+  min-height: 0;
 }
 .history-list{
   list-style: none;
@@ -156,30 +205,76 @@ body{
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 10px;
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,217,106,.12);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,217,106,.03) 0%,
+      rgba(0,0,0,.12) 100%
+    );
   /* Subtle scrollbars */
   scrollbar-width: thin; /* Firefox */
-  scrollbar-color: rgba(255,255,255,.18) transparent;
+  scrollbar-color: rgba(255,217,106,.22) transparent;
 }
+
+/* ---- History card (neon metal tile) ---- */
 .history-list li{
   display: grid;
   grid-auto-rows: min-content;
   align-items: center;
   justify-items: center;
   padding: 10px 8px;
-  border: 1px solid rgba(255,255,255,.12);
   border-radius: 12px;
-  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+  position: relative;
+  border: 1px solid rgba(255,217,106,.15);
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255,255,255,.10) 0%,
+      rgba(255,217,106,.05) 40%,
+      rgba(0,0,0,.15) 100%
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(0,0,0,.20),
+    0 2px 8px rgba(0,0,0,.25);
+  transition: border-color .25s ease, box-shadow .25s ease, transform .2s ease;
 }
+.history-list li:hover{
+  border-color: rgba(255,217,106,.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 0 12px rgba(255,217,106,.15),
+    0 4px 12px rgba(0,0,0,.3);
+  transform: translateY(-1px);
+}
+
+/* Entrance animation for new cards */
+@keyframes card-in{
+  from{ opacity:0; transform: scale(.85) translateY(-8px); }
+  to{ opacity:1; transform: scale(1) translateY(0); }
+}
+.history-list li{
+  animation: card-in .35s ease-out both;
+}
+
 .badge-pill{
-  font-weight: 700;
-  font-size: .9rem;
-  padding: .15rem .5rem;
+  font-family: "Racing Sans One", sans-serif;
+  font-weight: 400;
+  font-size: .85rem;
+  padding: .15rem .55rem;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.2);
-  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.08));
+  border: 1px solid rgba(255,217,106,.25);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,217,106,.18),
+      rgba(195,136,36,.10)
+    );
+  color: var(--neon-gold);
+  text-shadow: 0 0 6px var(--neon-gold-glow);
   margin-bottom: 6px;
+  letter-spacing: .04em;
 }
 .time{ font-size:.85rem; color: var(--muted); }
 
@@ -189,12 +284,21 @@ body{
   .coin{ width: min(48vh, 80vw); }
 }
 
+/* ---- History face text with neon glow ---- */
 .history-face{
-  font-weight: 700;
-  letter-spacing: .02em;
+  font-family: "Racing Sans One", sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  letter-spacing: .04em;
 }
-.history-face.heads{ color: var(--accent-2); }
-.history-face.tails{ color: #60a5fa; }
+.history-face.heads{
+  color: var(--neon-gold);
+  text-shadow: 0 0 8px var(--neon-gold-glow);
+}
+.history-face.tails{
+  color: var(--neon-blue);
+  text-shadow: 0 0 8px var(--neon-blue-glow);
+}
 
 .brand .logo{
   display:block;
@@ -221,11 +325,11 @@ body{
 .history-list::-webkit-scrollbar{ width: 6px; height: 6px; }
 .history-list::-webkit-scrollbar-track{ background: transparent; }
 .history-list::-webkit-scrollbar-thumb{
-  background: rgba(255,255,255,.18);
+  background: rgba(255,217,106,.22);
   border-radius: 8px;
 }
 .history-list:hover::-webkit-scrollbar-thumb{
-  background: rgba(255,255,255,.28);
+  background: rgba(255,217,106,.35);
 }
 
 /* Fullscreen toggle button */
