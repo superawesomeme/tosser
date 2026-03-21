@@ -39,10 +39,10 @@ coinWrap.appendChild(canvas);
 // Scene
 const scene = new THREE.Scene();
 
-// Camera
+// Camera – lookAt raised so the coin renders ~20% lower in the canvas
 const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
 camera.position.set(0, 3.5, 3.5);
-camera.lookAt(0, 0, 0);
+camera.lookAt(0, 0.7, 0);
 
 // Renderer (transparent background so page background shows through)
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -69,23 +69,23 @@ if (window.ResizeObserver) {
 onResize();
 
 // ===== Lighting =====
-// Soft ambient fill
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
+// Soft ambient fill (boosted for brighter coin)
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
 scene.add(ambientLight);
 
-// Main key light (sun-like, casts shadows)
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.6);
+// Main key light (sun-like, casts shadows – boosted)
+const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
 dirLight.position.set(5, 10, 5);
 dirLight.castShadow = true;
 scene.add(dirLight);
 
-// Warm accent (golden rim reflections)
-const fillLight = new THREE.PointLight(0xffd080, 1.0, 25);
+// Warm accent (golden rim reflections – boosted)
+const fillLight = new THREE.PointLight(0xffd080, 1.4, 25);
 fillLight.position.set(-3, 2, 3);
 scene.add(fillLight);
 
-// Subtle back-light for edge definition
-const backLight = new THREE.PointLight(0x6699ff, 0.4, 20);
+// Subtle back-light for edge definition (boosted)
+const backLight = new THREE.PointLight(0x6699ff, 0.6, 20);
 backLight.position.set(0, -4, -4);
 scene.add(backLight);
 
@@ -121,25 +121,25 @@ tailsTexture.repeat.set(1, -1);
 tailsTexture.offset.set(0, 1);
 
 // ===== Materials =====
-// Metallic gold rim
+// Metallic gold rim (slightly lower roughness for extra shine)
 const rimMaterial = new THREE.MeshStandardMaterial({
   color: 0xD4A017,
   metalness: 0.92,
-  roughness: 0.18,
+  roughness: 0.14,
 });
 
-// Heads face (top cap, +Y)
+// Heads face (top cap, +Y) – lower roughness for brighter look
 const headsMaterial = new THREE.MeshStandardMaterial({
   map: headsTexture,
   metalness: 0.35,
-  roughness: 0.40,
+  roughness: 0.30,
 });
 
-// Tails face (bottom cap, -Y)
+// Tails face (bottom cap, -Y) – lower roughness for brighter look
 const tailsMaterial = new THREE.MeshStandardMaterial({
   map: tailsTexture,
   metalness: 0.35,
-  roughness: 0.40,
+  roughness: 0.30,
 });
 
 // Build the coin mesh with a per-group material array
