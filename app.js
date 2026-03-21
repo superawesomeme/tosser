@@ -50,6 +50,10 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
+// Enable tone mapping for brighter, more vivid output
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.4;
+
 // ---- Responsive resize ----
 function onResize() {
   const w = coinWrap.clientWidth;
@@ -70,24 +74,29 @@ onResize();
 
 // ===== Lighting =====
 // Soft ambient fill (boosted for brighter coin)
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
 scene.add(ambientLight);
 
 // Main key light (sun-like, casts shadows – boosted)
-const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
+const dirLight = new THREE.DirectionalLight(0xffffff, 2.5);
 dirLight.position.set(5, 10, 5);
 dirLight.castShadow = true;
 scene.add(dirLight);
 
 // Warm accent (golden rim reflections – boosted)
-const fillLight = new THREE.PointLight(0xffd080, 1.4, 25);
+const fillLight = new THREE.PointLight(0xffd080, 1.8, 25);
 fillLight.position.set(-3, 2, 3);
 scene.add(fillLight);
 
 // Subtle back-light for edge definition (boosted)
-const backLight = new THREE.PointLight(0x6699ff, 0.6, 20);
+const backLight = new THREE.PointLight(0x6699ff, 0.8, 20);
 backLight.position.set(0, -4, -4);
 scene.add(backLight);
+
+// Extra front fill light for face brightness
+const frontFill = new THREE.PointLight(0xffffff, 0.6, 20);
+frontFill.position.set(0, 2, 5);
+scene.add(frontFill);
 
 // ===== Coin Geometry =====
 const COIN_RADIUS   = 1.0;
@@ -121,25 +130,29 @@ tailsTexture.repeat.set(1, -1);
 tailsTexture.offset.set(0, 1);
 
 // ===== Materials =====
-// Metallic gold rim (slightly lower roughness for extra shine)
+// Metallic gold rim (lower roughness + brighter color for extra shine)
 const rimMaterial = new THREE.MeshStandardMaterial({
-  color: 0xD4A017,
-  metalness: 0.92,
-  roughness: 0.14,
+  color: 0xE8B830,
+  metalness: 0.95,
+  roughness: 0.10,
 });
 
-// Heads face (top cap, +Y) – lower roughness for brighter look
+// Heads face (top cap, +Y) – lower roughness & added emissive glow
 const headsMaterial = new THREE.MeshStandardMaterial({
   map: headsTexture,
-  metalness: 0.35,
-  roughness: 0.30,
+  metalness: 0.40,
+  roughness: 0.22,
+  emissive: 0x332200,
+  emissiveIntensity: 0.15,
 });
 
-// Tails face (bottom cap, -Y) – lower roughness for brighter look
+// Tails face (bottom cap, -Y) – lower roughness & added emissive glow
 const tailsMaterial = new THREE.MeshStandardMaterial({
   map: tailsTexture,
-  metalness: 0.35,
-  roughness: 0.30,
+  metalness: 0.40,
+  roughness: 0.22,
+  emissive: 0x332200,
+  emissiveIntensity: 0.15,
 });
 
 // Build the coin mesh with a per-group material array
@@ -322,8 +335,8 @@ function setupFsButton() {
   });
   ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange']
     .forEach(evt => document.addEventListener(evt, syncFsButton));
-  syncFsButton();
-  fsBtn.dataset.wired = '1';
+syncFsButton();
+fsBtn.dataset.wired = '1';
 }
 
 setupFsButton();
