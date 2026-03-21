@@ -109,7 +109,7 @@ const textureLoader = new THREE.TextureLoader();
 const headsTexture = textureLoader.load('img/heads.png');
 const tailsTexture = textureLoader.load('img/tails.png');
 
-// Enable sRGB colour space for accurate colour rendering
+// Enable sRGB color space for accurate color rendering
 headsTexture.colorSpace = THREE.SRGBColorSpace;
 tailsTexture.colorSpace  = THREE.SRGBColorSpace;
 
@@ -249,7 +249,7 @@ function startToss() {
       if (st >= 1.0) {
         coinMesh.position.y = 0;
 
-        // Normalise accumulated X rotation so it doesn't grow unbounded
+        // Normalize accumulated X rotation so it doesn't grow unbounded
         coinMesh.rotation.x = isHeads ? 0 : Math.PI;
 
         // Show result
