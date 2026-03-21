@@ -114,10 +114,11 @@ headsTexture.colorSpace = THREE.SRGBColorSpace;
 tailsTexture.colorSpace  = THREE.SRGBColorSpace;
 
 // The bottom cap UV is mirrored relative to how we view it when the coin is flipped,
-// so flip the tails texture horizontally to compensate.
-tailsTexture.wrapS = THREE.RepeatWrapping;
-tailsTexture.repeat.set(-1, 1);
-tailsTexture.offset.set(1, 0);
+// so flip the tails texture vertically to compensate.
+// Rotating the coin 180° around X negates Z, which maps to the V axis in UV space.
+tailsTexture.wrapT = THREE.RepeatWrapping;
+tailsTexture.repeat.set(1, -1);
+tailsTexture.offset.set(0, 1);
 
 // ===== Materials =====
 // Metallic gold rim
@@ -199,7 +200,7 @@ function startToss() {
   const finalXRot  = startXRot + totalXRot;
 
   // Arc height (world units)
-  const MAX_HEIGHT = 2.8;
+  const MAX_HEIGHT = 1.8;
 
   // Wobble amplitudes (adds Y/Z rotation during flight for realism)
   const wobbleY = 0.18;
