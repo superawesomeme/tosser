@@ -50,10 +50,6 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-// Tone mapping for vivid but balanced output
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.2;
-
 // ---- Responsive resize ----
 function onResize() {
   const w = coinWrap.clientWidth;
@@ -310,7 +306,7 @@ function setupFsButton() {
   function requestFs(el) {
     if (el.requestFullscreen)       return el.requestFullscreen();
     if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
-    if (el.mozRequestFullScreen)    return el.mozFullScreen();
+    if (el.mozRequestFullScreen)    return el.mozRequestFullScreen();
     if (el.msRequestFullscreen)     return el.msRequestFullscreen();
   }
   function exitFs() {
