@@ -18,10 +18,7 @@
       <!-- Left: coin and button -->
       <section class="stage">
         <div class="coin-wrap">
-          <div id="coin" class="coin" aria-live="polite" aria-label="Tossing coin" tabindex="0" role="button" aria-pressed="false">
-            <div class="heads"><img src="img/heads.png" alt="Heads" /></div>
-            <div class="tails"><img src="img/tails.png" alt="Tails" /></div>
-          </div>
+          <!-- Three.js canvas is inserted here by app.js -->
         </div>
         <div class="controls">
           <button id="toss-button" class="btn racing-sans-one-regular">Toss coin</button>
@@ -50,7 +47,14 @@
       </aside>
     </div>
 
-    <script src="app.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+        }
+      }
+    </script>
+    <script type="module" src="app.js"></script>
     <button id="fs-toggle" class="fs-toggle" aria-label="Enter fullscreen" title="Enter fullscreen" type="button">
       <!-- inline SVG: two icons, we toggle visibility via data-state -->
       <svg class="icon enter" viewBox="0 0 24 24" aria-hidden="true" focusable="false">

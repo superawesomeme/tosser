@@ -1,11 +1,10 @@
-const coin = document.getElementById('coin');
-const tossBtn = document.getElementById('toss-button');
-const result = document.querySelector('.result');
+import * as THREE from 'three';
 
-// History UI
+// ===== History UI =====
 const historyList = document.getElementById('history-list');
 let tossCount = 0;
-function addToHistory(face){
+
+function addToHistory(face) {
   if (!historyList) return;
   tossCount += 1;
   const li = document.createElement('li');
@@ -23,179 +22,307 @@ function addToHistory(face){
   historyList.insertAdjacentElement('afterbegin', li);
 }
 
+// ===== Three.js Coin Setup =====
+const coinWrap = document.querySelector('.coin-wrap');
+const resultEl  = document.querySelector('.result');
+const tossBtn   = document.getElementById('toss-button');
 
-let currentAngle = 0; // Track current rotation in degrees
+// Create the WebGL canvas and give it button-like accessibility attributes
+const canvas = document.createElement('canvas');
+canvas.setAttribute('tabindex', '0');
+canvas.setAttribute('role', 'button');
+canvas.setAttribute('aria-live', 'polite');
+canvas.setAttribute('aria-label', 'Coin – click or press Enter/Space to toss');
+canvas.setAttribute('aria-pressed', 'false');
+coinWrap.appendChild(canvas);
 
-function startToss(){
-    if (tossBtn) tossBtn.disabled = true;
-    document.body.classList.add('no-scroll');
-    result.style.opacity = 0;
+// Scene
+const scene = new THREE.Scene();
 
-    const randomVal = Math.random();
-    const isHeads = randomVal < 0.5;
-    const face = isHeads ? 'Heads' : 'Tails';
+// Camera
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+camera.position.set(0, 3.5, 3.5);
+camera.lookAt(0, 0, 0);
 
-    // Random spins between 5 and 10
-    const spins = Math.floor(Math.random() * 6) + 5;
+// Renderer (transparent background so page background shows through)
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-    // Base rotation
-    let extraRotation = spins * 360;
-
-    // Target final side
-    const targetAngle = isHeads ? 0 : 180;
-
-    // Final angle adjustment
-    currentAngle += extraRotation;
-    if ((currentAngle % 360) !== targetAngle) {
-        currentAngle += (targetAngle - (currentAngle % 360));
-    }
-
-    // Duration based on number of spins
-    const duration = spins * 500; // Increased base duration
-
-    // Animate main coin flip
-    coin.style.transition = `transform ${duration}ms cubic-bezier(0.4, 2.5, 0.6, 0.5),
-                              scale ${duration}ms ease-in-out,
-                              box-shadow ${duration}ms ease-in-out`;
-    coin.style.transform = `rotateY(${currentAngle}deg) scale(1.3)`;
-    coin.style.boxShadow = `0 20px 40px rgba(0, 0, 0, 0.5)`;
-
-    // Midway shrink
-    setTimeout(() => {
-        coin.style.transform = `rotateY(${currentAngle}deg) scale(1)`;
-        coin.style.boxShadow = `0 8px 20px rgba(0, 0, 0, 0.2)`;
-    }, duration / 2);
-
-    // After full spin, do little wiggle
-    setTimeout(() => {
-        // Set transition to fast for wiggle
-        coin.style.transition = `transform 150ms ease-in-out`;
-
-        // Wiggle sequence
-        coin.style.transform = `rotateY(${currentAngle + 2}deg)`;
-        setTimeout(() => {
-            coin.style.transform = `rotateY(${currentAngle - 2}deg)`;
-            setTimeout(() => {
-                coin.style.transform = `rotateY(${currentAngle}deg)`;
-            }, 150);
-        }, 150);
-
-        // Finally show the result
-        setTimeout(() => {
-            result.textContent = `${face}`; // no "Result:" prefix
-            result.style.opacity = 1;
-            addToHistory(face);
-            if (tossBtn) tossBtn.disabled = false;
-            document.body.classList.remove('no-scroll');
-        }, 500); // Allow wiggle to finish
-    }, duration);
+// ---- Responsive resize ----
+function onResize() {
+  const w = coinWrap.clientWidth;
+  const h = coinWrap.clientHeight;
+  if (w === 0 || h === 0) return;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
 }
 
-// Bindings: button, coin click, and keyboard (Enter/Space) on coin
-if (tossBtn) tossBtn.addEventListener('click', startToss);
-coin.addEventListener('click', startToss);
-coin.addEventListener('keydown', (e) => {
+// Prefer ResizeObserver for container-level responsiveness
+if (window.ResizeObserver) {
+  new ResizeObserver(onResize).observe(coinWrap);
+} else {
+  window.addEventListener('resize', onResize);
+}
+onResize();
+
+// ===== Lighting =====
+// Soft ambient fill
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
+scene.add(ambientLight);
+
+// Main key light (sun-like, casts shadows)
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.6);
+dirLight.position.set(5, 10, 5);
+dirLight.castShadow = true;
+scene.add(dirLight);
+
+// Warm accent (golden rim reflections)
+const fillLight = new THREE.PointLight(0xffd080, 1.0, 25);
+fillLight.position.set(-3, 2, 3);
+scene.add(fillLight);
+
+// Subtle back-light for edge definition
+const backLight = new THREE.PointLight(0x6699ff, 0.4, 20);
+backLight.position.set(0, -4, -4);
+scene.add(backLight);
+
+// ===== Coin Geometry =====
+const COIN_RADIUS   = 1.0;
+const COIN_THICKNESS = 0.09;
+const COIN_SEGMENTS  = 128;
+
+// CylinderGeometry groups: [0] = side/rim, [1] = top cap (+Y), [2] = bottom cap (-Y)
+const coinGeometry = new THREE.CylinderGeometry(
+  COIN_RADIUS,
+  COIN_RADIUS,
+  COIN_THICKNESS,
+  COIN_SEGMENTS,
+  1,
+  false
+);
+
+// ===== Textures =====
+const textureLoader = new THREE.TextureLoader();
+const headsTexture = textureLoader.load('img/heads.png');
+const tailsTexture = textureLoader.load('img/tails.png');
+
+// Enable sRGB color space for accurate color rendering
+headsTexture.colorSpace = THREE.SRGBColorSpace;
+tailsTexture.colorSpace  = THREE.SRGBColorSpace;
+
+// The bottom cap UV is mirrored relative to how we view it when the coin is flipped,
+// so flip the tails texture horizontally to compensate.
+tailsTexture.wrapS = THREE.RepeatWrapping;
+tailsTexture.repeat.set(-1, 1);
+tailsTexture.offset.set(1, 0);
+
+// ===== Materials =====
+// Metallic gold rim
+const rimMaterial = new THREE.MeshStandardMaterial({
+  color: 0xD4A017,
+  metalness: 0.92,
+  roughness: 0.18,
+});
+
+// Heads face (top cap, +Y)
+const headsMaterial = new THREE.MeshStandardMaterial({
+  map: headsTexture,
+  metalness: 0.35,
+  roughness: 0.40,
+});
+
+// Tails face (bottom cap, -Y)
+const tailsMaterial = new THREE.MeshStandardMaterial({
+  map: tailsTexture,
+  metalness: 0.35,
+  roughness: 0.40,
+});
+
+// Build the coin mesh with a per-group material array
+const coinMesh = new THREE.Mesh(coinGeometry, [rimMaterial, headsMaterial, tailsMaterial]);
+coinMesh.castShadow = true;
+scene.add(coinMesh);
+
+// ===== Main Render Loop =====
+let isTossing = false;  // is a toss animation running?
+
+function mainLoop() {
+  // Gentle idle Y rotation when not tossing
+  if (!isTossing) {
+    coinMesh.rotation.y += 0.004;
+  }
+  renderer.render(scene, camera);
+  requestAnimationFrame(mainLoop);
+}
+mainLoop();
+
+// ===== Easing helpers =====
+const TWO_PI = Math.PI * 2;
+
+function easeInOut(t) {
+  // Smooth step (cubic ease-in-out)
+  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
+// ===== Toss Animation =====
+function startToss() {
+  if (isTossing) return;
+  isTossing = true;
+
+  if (tossBtn) tossBtn.disabled = true;
+  document.body.classList.add('no-scroll');
+  resultEl.style.opacity = 0;
+  canvas.setAttribute('aria-pressed', 'true');
+
+  // 50/50 random result
+  const isHeads = Math.random() < 0.5;
+  const face     = isHeads ? 'Heads' : 'Tails';
+
+  // Random spin count (5–10 full rotations) drives duration
+  const spins    = Math.floor(Math.random() * 6) + 5;
+  const duration = spins * 500; // 2500–5000 ms
+
+  // ---- Calculate final X rotation ----
+  // rotation.x = 0   (mod 2π) → top cap (heads) faces +Y → visible to camera
+  // rotation.x = π   (mod 2π) → bottom cap (tails) faces +Y → visible to camera
+  const startXRot     = coinMesh.rotation.x;
+  const startYRot     = coinMesh.rotation.y;
+  const targetFaceAngle = isHeads ? 0 : Math.PI;
+  const normalizedStart = ((startXRot % TWO_PI) + TWO_PI) % TWO_PI;
+  let extra = (targetFaceAngle - normalizedStart + TWO_PI) % TWO_PI;
+  // Guarantee at least a meaningful tail-off angle so the landing looks clean
+  if (extra < Math.PI * 0.15) extra += TWO_PI;
+  const totalXRot  = spins * TWO_PI + extra;
+  const finalXRot  = startXRot + totalXRot;
+
+  // Arc height (world units)
+  const MAX_HEIGHT = 2.8;
+
+  // Wobble amplitudes (adds Y/Z rotation during flight for realism)
+  const wobbleY = 0.18;
+  const wobbleZ = 0.12;
+
+  const startTime = performance.now();
+
+  // ---- Settle / bounce phase ----
+  let settling    = false;
+  let settleStart = 0;
+  const SETTLE_DURATION = 380;
+
+  function animate() {
+    const elapsed = performance.now() - startTime;
+
+    if (!settling) {
+      // ---- Toss phase ----
+      const t = Math.min(elapsed / duration, 1.0);
+
+      // Parabolic arc: peaks at t = 0.5
+      coinMesh.position.y = MAX_HEIGHT * Math.sin(t * Math.PI);
+
+      // Rotation with ease-in-out spreading over the full flight
+      coinMesh.rotation.x = startXRot + totalXRot * easeInOut(t);
+
+      // Side-wobble (Y and Z) gives the coin a tumbling feel
+      coinMesh.rotation.y = startYRot + Math.sin(t * Math.PI * spins * 1.1) * wobbleY;
+      coinMesh.rotation.z = Math.sin(t * Math.PI * spins * 0.7) * wobbleZ;
+
+      if (t >= 1.0) {
+        // Land: snap to canonical final rotation
+        coinMesh.rotation.x = finalXRot;
+        coinMesh.rotation.y = 0;
+        coinMesh.rotation.z = 0;
+        coinMesh.position.y = 0;
+
+        settling    = true;
+        settleStart = performance.now();
+      }
+    } else {
+      // ---- Settle / bounce phase ----
+      const st = Math.min((performance.now() - settleStart) / SETTLE_DURATION, 1.0);
+
+      // Decaying oscillation simulates a coin bouncing to rest
+      coinMesh.position.y = Math.sin(st * Math.PI * 2.5) * 0.12 * (1 - st);
+
+      if (st >= 1.0) {
+        coinMesh.position.y = 0;
+
+        // Normalize accumulated X rotation so it doesn't grow unbounded
+        coinMesh.rotation.x = isHeads ? 0 : Math.PI;
+
+        // Show result
+        resultEl.textContent  = face;
+        resultEl.style.opacity = 1;
+        addToHistory(face);
+
+        canvas.setAttribute('aria-pressed', 'false');
+        if (tossBtn) tossBtn.disabled = false;
+        document.body.classList.remove('no-scroll');
+
+        isTossing = false;
+        return; // end animation loop
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  requestAnimationFrame(animate);
+}
+
+// ===== Event Bindings =====
+canvas.addEventListener('click', startToss);
+canvas.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' || e.key === ' ') {
     e.preventDefault();
     startToss();
   }
 });
-// ===== Fullscreen toggle =====
-const fsBtn = document.getElementById('fs-toggle');
+if (tossBtn) tossBtn.addEventListener('click', startToss);
 
-function isFullscreen(){
-  return document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-}
-function requestFs(el){
-  if (el.requestFullscreen) return el.requestFullscreen();
-  if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
-  if (el.mozRequestFullScreen) return el.mozRequestFullScreen();
-  if (el.msRequestFullscreen) return el.msRequestFullscreen();
-}
-function exitFs(){
-  if (document.exitFullscreen) return document.exitFullscreen();
-  if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
-  if (document.mozCancelFullScreen) return document.mozCancelFullScreen();
-  if (document.msExitFullscreen) return document.msExitFullscreen();
-}
-function syncFsButton(){
-  if (!fsBtn) return;
-  const active = !!isFullscreen();
-  fsBtn.setAttribute('data-state', active ? 'exit' : 'enter');
-  fsBtn.setAttribute('aria-label', active ? 'Exit fullscreen' : 'Enter fullscreen');
-  fsBtn.setAttribute('title', active ? 'Exit fullscreen' : 'Enter fullscreen');
-}
-function toggleFullscreen(){
-  if (isFullscreen()) {
-    exitFs();
-  } else {
-    // use the root app as target for better iOS behavior
-    const target = document.documentElement;
-    requestFs(target);
+// ===== Fullscreen Toggle =====
+function setupFsButton() {
+  const fsBtn = document.getElementById('fs-toggle');
+  if (!fsBtn || fsBtn.dataset.wired === '1') return;
+
+  function isFullscreen() {
+    return document.fullscreenElement
+      || document.webkitFullscreenElement
+      || document.mozFullScreenElement
+      || document.msFullscreenElement;
   }
-}
-
-if (fsBtn){
-  fsBtn.addEventListener('click', toggleFullscreen);
-  fsBtn.addEventListener('keydown', (e)=>{
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFullscreen(); }
-  });
-  // initialize
-  syncFsButton();
-  ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange'].forEach(evt => {
-    document.addEventListener(evt, syncFsButton);
-  });
-}
-
-
-// ===== Fullscreen toggle (robust init) =====
-function setupFsButton(){
-  const fsBtnLocal = document.getElementById('fs-toggle');
-  if (!fsBtnLocal || fsBtnLocal.dataset.wired === '1') return;
-
-  function isFullscreen(){
-    return document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-  }
-  function requestFs(el){
-    if (el.requestFullscreen) return el.requestFullscreen();
+  function requestFs(el) {
+    if (el.requestFullscreen)       return el.requestFullscreen();
     if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
-    if (el.mozRequestFullScreen) return el.mozRequestFullScreen();
-    if (el.msRequestFullscreen) return el.msRequestFullscreen();
+    if (el.mozRequestFullScreen)    return el.mozRequestFullScreen();
+    if (el.msRequestFullscreen)     return el.msRequestFullscreen();
   }
-  function exitFs(){
-    if (document.exitFullscreen) return document.exitFullscreen();
+  function exitFs() {
+    if (document.exitFullscreen)       return document.exitFullscreen();
     if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
-    if (document.mozCancelFullScreen) return document.mozCancelFullScreen();
-    if (document.msExitFullscreen) return document.msExitFullscreen();
+    if (document.mozCancelFullScreen)  return document.mozCancelFullScreen();
+    if (document.msExitFullscreen)     return document.msExitFullscreen();
   }
-  function syncFsButton(){
-    const active = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-    fsBtnLocal.setAttribute('data-state', active ? 'exit' : 'enter');
-    fsBtnLocal.setAttribute('aria-label', active ? 'Exit fullscreen' : 'Enter fullscreen');
-    fsBtnLocal.setAttribute('title', active ? 'Exit fullscreen' : 'Enter fullscreen');
+  function syncFsButton() {
+    const active = !!isFullscreen();
+    fsBtn.setAttribute('data-state', active ? 'exit' : 'enter');
+    fsBtn.setAttribute('aria-label', active ? 'Exit fullscreen' : 'Enter fullscreen');
+    fsBtn.setAttribute('title',      active ? 'Exit fullscreen' : 'Enter fullscreen');
   }
-  function toggleFullscreen(){
-    if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
-      exitFs();
-    } else {
-      const target = document.documentElement;
-      requestFs(target);
-    }
+  function toggleFullscreen() {
+    if (isFullscreen()) { exitFs(); } else { requestFs(document.documentElement); }
   }
 
-  fsBtnLocal.addEventListener('click', toggleFullscreen);
-  fsBtnLocal.addEventListener('keydown', (e)=>{
+  fsBtn.addEventListener('click', toggleFullscreen);
+  fsBtn.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFullscreen(); }
   });
-  ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange'].forEach(evt => {
-    document.addEventListener(evt, syncFsButton);
-  });
+  ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange']
+    .forEach(evt => document.addEventListener(evt, syncFsButton));
   syncFsButton();
-  fsBtnLocal.dataset.wired = '1';
+  fsBtn.dataset.wired = '1';
 }
 
-// Try to wire immediately (in case button is already present)
 setupFsButton();
-// Also wire on DOMContentLoaded in case script ran before button existed
-document.addEventListener('DOMContentLoaded', setupFsButton);
-

@@ -49,45 +49,17 @@ body{
   place-items:center;
   width:100%;
   height:100%;
-  perspective: 1200px; /* Keep perspective like original */
-}
-
-/* === Coin styles compatible with original JS === */
-.coin{
-  width: min(60vh, 58vw, 520px);
-  height: auto;
-  aspect-ratio: 1/1;
   position: relative;
-  border-radius: 50%;
-  transform-style: preserve-3d;
-  transform: rotateY(0deg);
-  transition: transform 1s cubic-bezier(0.4, 2.5, 0.6, 0.5); /* default; JS overrides per toss */
-  margin: 0 auto;
 }
 
-.coin .heads, .coin .tails{
-  position: absolute;
+/* Three.js canvas fills the coin-wrap container */
+.coin-wrap canvas {
+  display: block;
   width: 100%;
   height: 100%;
-  backface-visibility: hidden;
-  border-radius: 50%;
-  overflow: hidden;
-}
-.coin .heads img, .coin .tails img{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-.coin .heads{ transform: rotateY(0deg); }
-.coin .tails{ transform: rotateY(180deg); }
-
-.coin::before{
-  content:"";
-  position:absolute; inset:0;
-  border-radius:50%;
-  box-shadow: inset 0 0 8px rgba(0,0,0,0.4);
-  pointer-events:none;
+  cursor: pointer;
+  border-radius: 12px;
+  outline: none;
 }
 
 /* Button */
