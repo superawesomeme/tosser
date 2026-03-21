@@ -50,9 +50,9 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-// Enable tone mapping for brighter, more vivid output
+// Tone mapping for vivid but balanced output
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.4;
+renderer.toneMappingExposure = 1.2;
 
 // ---- Responsive resize ----
 function onResize() {
@@ -73,28 +73,28 @@ if (window.ResizeObserver) {
 onResize();
 
 // ===== Lighting =====
-// Soft ambient fill (boosted for brighter coin)
-const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+// Soft ambient fill
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
 scene.add(ambientLight);
 
-// Main key light (sun-like, casts shadows – boosted)
-const dirLight = new THREE.DirectionalLight(0xffffff, 2.5);
+// Main key light (sun-like, casts shadows)
+const dirLight = new THREE.DirectionalLight(0xffffff, 2.2);
 dirLight.position.set(5, 10, 5);
 dirLight.castShadow = true;
 scene.add(dirLight);
 
-// Warm accent (golden rim reflections – boosted)
-const fillLight = new THREE.PointLight(0xffd080, 1.8, 25);
+// Warm accent (golden rim reflections)
+const fillLight = new THREE.PointLight(0xffd080, 1.6, 25);
 fillLight.position.set(-3, 2, 3);
 scene.add(fillLight);
 
-// Subtle back-light for edge definition (boosted)
-const backLight = new THREE.PointLight(0x6699ff, 0.8, 20);
+// Subtle back-light for edge definition
+const backLight = new THREE.PointLight(0x6699ff, 0.7, 20);
 backLight.position.set(0, -4, -4);
 scene.add(backLight);
 
-// Extra front fill light for face brightness
-const frontFill = new THREE.PointLight(0xffffff, 0.6, 20);
+// Front fill light for face brightness
+const frontFill = new THREE.PointLight(0xffffff, 0.35, 20);
 frontFill.position.set(0, 2, 5);
 scene.add(frontFill);
 
@@ -130,29 +130,29 @@ tailsTexture.repeat.set(1, -1);
 tailsTexture.offset.set(0, 1);
 
 // ===== Materials =====
-// Metallic gold rim (lower roughness + brighter color for extra shine)
+// Metallic gold rim
 const rimMaterial = new THREE.MeshStandardMaterial({
-  color: 0xE8B830,
-  metalness: 0.95,
-  roughness: 0.10,
+  color: 0xDEAC24,
+  metalness: 0.93,
+  roughness: 0.12,
 });
 
-// Heads face (top cap, +Y) – lower roughness & added emissive glow
+// Heads face (top cap, +Y)
 const headsMaterial = new THREE.MeshStandardMaterial({
   map: headsTexture,
-  metalness: 0.40,
-  roughness: 0.22,
+  metalness: 0.38,
+  roughness: 0.26,
   emissive: 0x332200,
-  emissiveIntensity: 0.15,
+  emissiveIntensity: 0.08,
 });
 
-// Tails face (bottom cap, -Y) – lower roughness & added emissive glow
+// Tails face (bottom cap, -Y)
 const tailsMaterial = new THREE.MeshStandardMaterial({
   map: tailsTexture,
-  metalness: 0.40,
-  roughness: 0.22,
+  metalness: 0.38,
+  roughness: 0.26,
   emissive: 0x332200,
-  emissiveIntensity: 0.15,
+  emissiveIntensity: 0.08,
 });
 
 // Build the coin mesh with a per-group material array
@@ -310,7 +310,7 @@ function setupFsButton() {
   function requestFs(el) {
     if (el.requestFullscreen)       return el.requestFullscreen();
     if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
-    if (el.mozRequestFullScreen)    return el.mozRequestFullScreen();
+    if (el.mozRequestFullScreen)    return el.mozFullScreen();
     if (el.msRequestFullscreen)     return el.msRequestFullscreen();
   }
   function exitFs() {
@@ -335,8 +335,8 @@ function setupFsButton() {
   });
   ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange']
     .forEach(evt => document.addEventListener(evt, syncFsButton));
-syncFsButton();
-fsBtn.dataset.wired = '1';
+  syncFsButton();
+  fsBtn.dataset.wired = '1';
 }
 
 setupFsButton();
