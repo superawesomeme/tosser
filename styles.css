@@ -13,9 +13,9 @@ html, body{ height:100%; overflow:hidden; }
   --gold-2:#c38824;
   --neon-gold: #ffd96a;
   --neon-gold-glow: rgba(255,217,106,.45);
-  --neon-pink: #ff6ec7;
+  --neon-pink: #ff5da6;
   --neon-pink-glow: rgba(255,110,199,.5);
-  --neon-cyan: #00d4ff;
+  --neon-cyan: #49abf1;
   --neon-cyan-glow: rgba(0,212,255,.5);
   --neon-blue: #60a5fa;
   --neon-blue-glow: rgba(96,165,250,.4);
