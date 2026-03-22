@@ -13,6 +13,10 @@ html, body{ height:100%; overflow:hidden; }
   --gold-2:#c38824;
   --neon-gold: #ffd96a;
   --neon-gold-glow: rgba(255,217,106,.45);
+  --neon-pink: #ff6ec7;
+  --neon-pink-glow: rgba(255,110,199,.5);
+  --neon-cyan: #00d4ff;
+  --neon-cyan-glow: rgba(0,212,255,.5);
   --neon-blue: #60a5fa;
   --neon-blue-glow: rgba(96,165,250,.4);
   --metal-highlight: rgba(255,255,255,.15);
@@ -188,71 +192,68 @@ body{
     0 0 30px rgba(255,217,106,.2),
     0 2px 4px rgba(0,0,0,.5);
 }
+.result.heads{
+  color: var(--neon-pink);
+  text-shadow:
+    0 0 10px var(--neon-pink-glow),
+    0 0 30px rgba(255,110,199,.25),
+    0 2px 4px rgba(0,0,0,.5);
+}
+.result.tails{
+  color: var(--neon-cyan);
+  text-shadow:
+    0 0 10px var(--neon-cyan-glow),
+    0 0 30px rgba(0,212,255,.25),
+    0 2px 4px rgba(0,0,0,.5);
+}
 
 /* ---- History section ---- */
 .history{
   margin-top: clamp(12px, 2.5vw, 18px);
   min-height: 0;
-}
-/* ---- History strip (replaces card grid) ---- */
-.history-strip{
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-direction: column;
+  overflow: hidden;
+}
+/* ---- History strip (3-column layout) ---- */
+.history-strip{
+  column-count: 3;
+  column-gap: 16px;
   padding: 14px;
-  overflow-y: auto;
-  max-height: 260px;
+  overflow: hidden;
+  flex: 1;
   border-radius: 14px;
   border: 1px solid rgba(255,217,106,.12);
   background:
     linear-gradient(180deg,
       rgba(255,217,106,.03) 0%,
       rgba(0,0,0,.12) 100%);
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,217,106,.22) transparent;
 }
 
-/* Each dot = one toss result */
-.history-dot{
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: default;
-  transition: transform .2s ease, box-shadow .2s ease;
+/* Each item = one toss result */
+.history-item{
+  padding: 8px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-family: "Racing Sans One", sans-serif;
+  break-inside: avoid;
   animation: dot-in .3s ease-out both;
 }
 
-/* Heads = gold glow */
-.history-dot.heads{
-  background: radial-gradient(circle at 35% 35%,
-      #ffe08a, var(--neon-gold) 60%, #c38824);
-  border-color: rgba(255,217,106,.4);
-  box-shadow:
-    0 0 10px var(--neon-gold-glow),
-    inset 0 1px 2px rgba(255,255,255,.3);
+/* Heads = neon pink */
+.history-item.heads{
+  color: var(--neon-pink);
+  text-shadow:
+    0 0 10px var(--neon-pink-glow),
+    0 0 30px rgba(255,110,199,.2);
 }
 
-/* Tails = blue glow */
-.history-dot.tails{
-  background: radial-gradient(circle at 35% 35%,
-      #93c5fd, var(--neon-blue) 60%, #2563eb);
-  border-color: rgba(96,165,250,.4);
-  box-shadow:
-    0 0 10px var(--neon-blue-glow),
-    inset 0 1px 2px rgba(255,255,255,.25);
-}
-
-.history-dot:hover{
-  transform: scale(1.2);
-  box-shadow:
-    0 0 18px var(--neon-gold-glow),
-    0 0 30px rgba(255,217,106,.15);
-}
-.history-dot.tails:hover{
-  box-shadow:
-    0 0 18px var(--neon-blue-glow),
-    0 0 30px rgba(96,165,250,.15);
+/* Tails = neon cyan */
+.history-item.tails{
+  color: var(--neon-cyan);
+  text-shadow:
+    0 0 10px var(--neon-cyan-glow),
+    0 0 30px rgba(0,212,255,.2);
 }
 
 @keyframes dot-in{
@@ -264,6 +265,7 @@ body{
 @media (max-width: 980px){
   .app{ grid-template-columns: 1fr; }
   .coin{ width: min(48vh, 80vw); }
+  .history-strip{ column-count: 2; }
 }
 
 .brand .logo{
@@ -286,14 +288,6 @@ body{
 .controls{ display: none; }
 
 #toss-button{ display:none; }
-
-/* WebKit scrollbars for history strip */
-.history-strip::-webkit-scrollbar{ width: 6px; }
-.history-strip::-webkit-scrollbar-track{ background: transparent; }
-.history-strip::-webkit-scrollbar-thumb{
-  background: rgba(255,217,106,.22);
-  border-radius: 8px;
-}
 
 /* Fullscreen toggle button */
 .fs-toggle{

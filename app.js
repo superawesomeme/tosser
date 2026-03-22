@@ -8,12 +8,16 @@ function addToHistory(face) {
   if (!historyList) return;
   tossCount += 1;
 
-  const dot = document.createElement('span');
-  dot.className = `history-dot ${face.toLowerCase()}`;
-  dot.setAttribute('aria-label', `Toss #${tossCount}: ${face}`);
-  dot.title = `#${tossCount} – ${face}`;
-  historyList.prepend(dot);
+  const item = document.createElement('div');
+  item.className = `history-item ${face.toLowerCase()}`;
+  item.setAttribute('aria-label', `Toss #${tossCount}: ${face}`);
+  item.textContent = `#${tossCount} – ${face}`;
+  historyList.prepend(item);
 }
+
+// ===== Audio =====
+const coinFlipSound = new Audio('audio/coin-flip.mp3');
+const coinLandSound = new Audio('audio/coin-land.mp3');
 
 // ===== Three.js Coin Setup =====
 const coinWrap = document.querySelector('.coin-wrap');
@@ -180,6 +184,9 @@ function startToss() {
   resultEl.style.opacity = 0;
   canvas.setAttribute('aria-pressed', 'true');
 
+  coinFlipSound.currentTime = 0;
+  coinFlipSound.play().catch(() => {});
+
   // 50/50 random result
   const isHeads = Math.random() < 0.5;
   const face     = isHeads ? 'Heads' : 'Tails';
@@ -257,8 +264,13 @@ function startToss() {
 
         // Show result
         resultEl.textContent  = face;
+        resultEl.classList.remove('heads', 'tails');
+        resultEl.classList.add(face.toLowerCase());
         resultEl.style.opacity = 1;
         addToHistory(face);
+
+        coinLandSound.currentTime = 0;
+        coinLandSound.play().catch(() => {});
 
         canvas.setAttribute('aria-pressed', 'false');
         if (tossBtn) tossBtn.disabled = false;
