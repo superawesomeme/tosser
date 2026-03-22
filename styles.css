@@ -187,7 +187,6 @@ body{
   text-transform: uppercase;
   text-align: center;
   color: var(--neon-gold);
-  -webkit-text-stroke: 3px white;
   paint-order: fill stroke;
   text-shadow:
     0 0 10px var(--neon-gold-glow),
