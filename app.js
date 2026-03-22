@@ -11,7 +11,7 @@ function addToHistory(face) {
   const item = document.createElement('div');
   item.className = `history-item ${face.toLowerCase()}`;
   item.setAttribute('aria-label', `Toss #${tossCount}: ${face}`);
-  item.textContent = `#${tossCount} – ${face}`;
+
   historyList.prepend(item);
 }
 

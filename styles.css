@@ -187,6 +187,8 @@ body{
   text-transform: uppercase;
   text-align: center;
   color: var(--neon-gold);
+  -webkit-text-stroke: 1px white;
+  paint-order: stroke fill;
   text-shadow:
     0 0 10px var(--neon-gold-glow),
     0 0 30px rgba(255,217,106,.2),
@@ -215,10 +217,11 @@ body{
   flex-direction: column;
   overflow: hidden;
 }
-/* ---- History strip (3-column layout) ---- */
+/* ---- History strip (flex wrap dot layout) ---- */
 .history-strip{
-  column-count: 3;
-  column-gap: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   padding: 14px;
   overflow: hidden;
   flex: 1;
@@ -230,28 +233,26 @@ body{
       rgba(0,0,0,.12) 100%);
 }
 
-/* Each item = one toss result */
+/* Each item = one toss result dot */
 .history-item{
-  padding: 8px 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  font-family: "Racing Sans One", sans-serif;
-  break-inside: avoid;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   animation: dot-in .3s ease-out both;
 }
 
 /* Heads = neon pink */
 .history-item.heads{
-  color: var(--neon-pink);
-  text-shadow:
+  background-color: var(--neon-pink);
+  box-shadow:
     0 0 10px var(--neon-pink-glow),
     0 0 30px rgba(255,110,199,.2);
 }
 
 /* Tails = neon cyan */
 .history-item.tails{
-  color: var(--neon-cyan);
-  text-shadow:
+  background-color: var(--neon-cyan);
+  box-shadow:
     0 0 10px var(--neon-cyan-glow),
     0 0 30px rgba(0,212,255,.2);
 }
@@ -265,7 +266,6 @@ body{
 @media (max-width: 980px){
   .app{ grid-template-columns: 1fr; }
   .coin{ width: min(48vh, 80vw); }
-  .history-strip{ column-count: 2; }
 }
 
 .brand .logo{
