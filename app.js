@@ -7,19 +7,12 @@ let tossCount = 0;
 function addToHistory(face) {
   if (!historyList) return;
   tossCount += 1;
-  const li = document.createElement('li');
 
-  const idx = document.createElement('span');
-  idx.className = 'badge-pill';
-  idx.textContent = `#${tossCount}`;
-
-  const faceEl = document.createElement('span');
-  faceEl.className = `history-face ${face.toLowerCase()}`;
-  faceEl.textContent = face;
-
-  li.appendChild(idx);
-  li.appendChild(faceEl);
-  historyList.insertAdjacentElement('afterbegin', li);
+  const dot = document.createElement('span');
+  dot.className = `history-dot ${face.toLowerCase()}`;
+  dot.setAttribute('aria-label', `Toss #${tossCount}: ${face}`);
+  dot.title = `#${tossCount} – ${face}`;
+  historyList.prepend(dot);
 }
 
 // ===== Three.js Coin Setup =====
